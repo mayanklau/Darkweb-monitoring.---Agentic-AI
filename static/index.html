@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Darkweb Monitoring Agentic AI</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="workspace">
+        <aside class="panel">
+          <div class="brand">
+            <span class="mark">DM</span>
+            <div>
+              <h1>Darkweb Monitoring</h1>
+              <p>Agentic investigation console</p>
+            </div>
+          </div>
+
+          <form id="investigation-form">
+            <label>
+              Title
+              <input
+                name="title"
+                value="Shell Sales Analysis - Scoping"
+                autocomplete="off"
+                required
+              />
+            </label>
+            <label>
+              Focus
+              <select name="focus">
+                <option value="scoping">Scoping</option>
+                <option value="actor">Actor</option>
+                <option value="technical">Technical</option>
+                <option value="financial">Financial</option>
+              </select>
+            </label>
+            <label>
+              Organization profile
+              <textarea name="organization_profile" rows="4">Enterprise with public web properties, email infrastructure, cPanel-managed sites, and high-value user accounts.</textarea>
+            </label>
+            <label>
+              Seed intelligence
+              <textarea name="seed_text" rows="11" required>Identify dark web mentions of shells being sold in the last 30 days. Sellers advertise PHP-based shells, cPanel access, SMTP phishing kits, .gov and .edu targets, Base64 obfuscation, .htaccess persistence, cron jobs, B374K, WSO, and Telegram channels such as @shellbroker_x.</textarea>
+            </label>
+            <div class="toggles">
+              <label><input type="checkbox" name="generate_yara" checked /> YARA</label>
+              <label><input type="checkbox" name="run_swarm_simulation" checked /> Swarm</label>
+            </div>
+            <button type="submit">Run Investigation</button>
+          </form>
+        </aside>
+
+        <section class="results">
+          <header>
+            <div>
+              <p class="eyebrow">Live report</p>
+              <h2 id="report-title">Ready for investigation</h2>
+            </div>
+            <div class="risk" id="risk-score">--</div>
+          </header>
+
+          <article class="summary" id="summary">
+            Paste dark-web intelligence, leaked chat snippets, OCR output, or GTI-style findings to generate a scoped investigation report.
+          </article>
+
+          <div class="grid">
+            <section>
+              <h3>Indicators</h3>
+              <div id="indicators" class="list"></div>
+            </section>
+            <section>
+              <h3>Agent Findings</h3>
+              <div id="findings" class="list"></div>
+            </section>
+          </div>
+
+          <section>
+            <h3>Investigation Pivots</h3>
+            <ol id="pivots"></ol>
+          </section>
+
+          <section>
+            <h3>Detection Rules</h3>
+            <div id="yara" class="rules"></div>
+          </section>
+        </section>
+      </section>
+    </main>
+    <script src="/static/app.js"></script>
+  </body>
+</html>
+

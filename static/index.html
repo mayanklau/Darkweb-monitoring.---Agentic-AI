@@ -82,6 +82,21 @@
             <ol id="pivots"></ol>
           </section>
 
+          <div class="grid">
+            <section>
+              <h3>Case Management</h3>
+              <div class="case-actions">
+                <input id="case-title" placeholder="Case title" value="Shell-sale monitoring case" />
+                <button id="create-case" type="button">Create Case</button>
+              </div>
+              <div id="cases" class="list"></div>
+            </section>
+            <section>
+              <h3>Connectors</h3>
+              <div id="connectors" class="list"></div>
+            </section>
+          </div>
+
           <section>
             <h3>Detection Rules</h3>
             <div id="yara" class="rules"></div>
@@ -92,4 +107,3 @@
     <script src="/static/app.js"></script>
   </body>
 </html>
-

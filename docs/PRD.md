@@ -130,10 +130,15 @@ Included in this implementation:
 
 - FastAPI backend.
 - Static production-style UI.
-- SQLite storage.
+- SQLAlchemy storage supporting local SQLite and production Postgres.
 - Google Vision OCR integration stub with real client support.
 - Agentic analysis engine.
 - YARA generation.
+- Case management with status, owner, severity, tags, evidence, and investigation attachment.
+- Entity graph generation for investigations and indicators.
+- STIX-like export for MISP/OpenCTI style sharing.
+- Connector registry boundaries for GTI, MISP, OpenCTI, and SIEM integrations.
+- API-key auth with analyst/admin roles.
 - Docker and Compose.
 - CI workflow.
 - Unit/API tests.
@@ -141,9 +146,32 @@ Included in this implementation:
 Future enhancements:
 
 - STIX/TAXII export.
-- MISP/OpenCTI integration.
+- Full STIX/TAXII server support.
+- Live MISP/OpenCTI API push.
 - Google Threat Intelligence API integration, subject to licensed access.
 - Full graph database for actor/channel/entity relationships.
 - External YARA validation pipeline.
 - MiroFish sidecar adapter for large-scale simulation when license and deployment boundaries permit.
 
+## New Enterprise Requirements Added
+
+1. Case Management
+   - Cases must support draft, triaged, escalated, and closed states.
+   - Cases must support owner, severity, tags, linked evidence, and linked investigations.
+
+2. Evidence
+   - Evidence must be stored independently or attached to a case.
+   - OCR results can be stored as evidence and reused as investigation seed text.
+
+3. Graph
+   - The system must produce nodes for investigations and indicators.
+   - The system must produce confidence-scored edges between reports and indicators.
+
+4. Auth
+   - Auth can be disabled for local development.
+   - Production can require `X-API-Key`.
+   - Admin-only endpoints must reject analyst keys.
+
+5. Connector Boundaries
+   - The product must expose current connector readiness.
+   - Export formats must support downstream MISP/OpenCTI style workflows.

@@ -1,5 +1,6 @@
 from datetime import datetime
 from enum import Enum
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -9,6 +10,20 @@ class InvestigationFocus(str, Enum):
     actor = "actor"
     technical = "technical"
     financial = "financial"
+
+
+class CaseStatus(str, Enum):
+    draft = "draft"
+    triaged = "triaged"
+    escalated = "escalated"
+    closed = "closed"
+
+
+class Severity(str, Enum):
+    low = "low"
+    medium = "medium"
+    high = "high"
+    critical = "critical"
 
 
 class Indicator(BaseModel):
@@ -61,4 +76,79 @@ class OCRResult(BaseModel):
     text: str
     pages_or_images: int
     provider: str
+
+
+class CaseCreate(BaseModel):
+    title: str = Field(min_length=3)
+    description: str = ""
+    owner: str = "unassigned"
+    severity: Severity = Severity.medium
+    tags: list[str] = []
+
+
+class CaseUpdate(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    owner: str | None = None
+    severity: Severity | None = None
+    status: CaseStatus | None = None
+    tags: list[str] | None = None
+
+
+class CaseRecord(BaseModel):
+    id: str
+    title: str
+    description: str
+    owner: str
+    severity: Severity
+    status: CaseStatus
+    tags: list[str]
+    created_at: datetime
+    updated_at: datetime
+    investigation_ids: list[str] = []
+    evidence_ids: list[str] = []
+
+
+class EvidenceCreate(BaseModel):
+    title: str = Field(min_length=3)
+    source_type: str = "manual"
+    content: str = Field(min_length=1)
+    source_uri: str | None = None
+
+
+class EvidenceRecord(BaseModel):
+    id: str
+    case_id: str | None = None
+    title: str
+    source_type: str
+    content: str
+    source_uri: str | None = None
+    created_at: datetime
+
+
+class GraphNode(BaseModel):
+    id: str
+    label: str
+    kind: str
+    properties: dict[str, Any] = {}
+
+
+class GraphEdge(BaseModel):
+    source: str
+    target: str
+    relationship: str
+    confidence: float = Field(ge=0, le=1)
+
+
+class IntelligenceGraph(BaseModel):
+    nodes: list[GraphNode]
+    edges: list[GraphEdge]
+
+
+class ConnectorStatus(BaseModel):
+    name: str
+    kind: str
+    enabled: bool
+    mode: str
+    description: str
 

@@ -6,6 +6,10 @@ const indicators = document.querySelector("#indicators");
 const findings = document.querySelector("#findings");
 const pivots = document.querySelector("#pivots");
 const yara = document.querySelector("#yara");
+const cases = document.querySelector("#cases");
+const connectors = document.querySelector("#connectors");
+const caseTitle = document.querySelector("#case-title");
+const createCaseButton = document.querySelector("#create-case");
 
 function item(title, body, meta = "") {
   const node = document.createElement("div");
@@ -67,3 +71,36 @@ form.addEventListener("submit", async (event) => {
   renderReport(await response.json());
 });
 
+async function refreshCases() {
+  const response = await fetch("/api/cases");
+  if (!response.ok) return;
+  const payload = await response.json();
+  cases.replaceChildren(
+    ...payload.map((caseRecord) =>
+      item(caseRecord.title, `${caseRecord.status} | ${caseRecord.owner}`, `${caseRecord.severity} | ${caseRecord.investigation_ids.length} investigations`)
+    )
+  );
+}
+
+async function refreshConnectors() {
+  const response = await fetch("/api/connectors");
+  if (!response.ok) return;
+  const payload = await response.json();
+  connectors.replaceChildren(
+    ...payload.map((connector) =>
+      item(connector.name, connector.description, `${connector.kind} | ${connector.mode}`)
+    )
+  );
+}
+
+createCaseButton.addEventListener("click", async () => {
+  await fetch("/api/cases", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title: caseTitle.value, severity: "medium", tags: ["darkweb"] }),
+  });
+  await refreshCases();
+});
+
+refreshCases();
+refreshConnectors();

@@ -10,6 +10,11 @@ Production-ready starter for an agentic dark-web investigation product inspired 
 - Generates B374K, WSO, and generic PHP web-shell YARA rules.
 - Runs a MiroFish-inspired swarm simulation of SOC, threat intel, detection engineering, and risk-owner personas.
 - Stores investigations in SQLite.
+- Runs on SQLite locally or Postgres in Docker Compose.
+- Provides case management, evidence records, lifecycle status, owner, severity, and tags.
+- Builds an entity graph across investigations and indicators.
+- Exports STIX-like bundles for MISP/OpenCTI-style workflows.
+- Includes API-key auth and admin-only operational endpoints.
 - Offers optional Google Cloud Vision OCR for screenshots, scanned snippets, and image evidence.
 - Ships with API, browser UI, Dockerfile, Compose, CI, and tests.
 
@@ -58,6 +63,28 @@ curl -X POST http://localhost:8000/api/investigations \
   }'
 ```
 
+Case management:
+
+```bash
+curl -X POST http://localhost:8000/api/cases \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Shell-sale monitoring case","owner":"threat-intel","severity":"high","tags":["webshell","telegram"]}'
+
+curl http://localhost:8000/api/graph
+curl http://localhost:8000/api/connectors
+curl http://localhost:8000/api/investigations/{id}/exports/stix
+```
+
+Enable API-key auth:
+
+```bash
+AUTH_ENABLED=true
+API_KEYS=analyst-key-1,analyst-key-2
+ADMIN_API_KEYS=admin-key-1
+```
+
+Then pass `X-API-Key`.
+
 ## Public Tooling Notes
 
 MiroFish is referenced as an architectural inspiration for swarm-style scenario simulation. Its public GitHub project describes graph construction, persona generation, multi-agent simulation, report generation, and deep interaction. This repo implements a clean-room lightweight simulation layer and does not vendor MiroFish code.
@@ -83,3 +110,11 @@ docker compose up --build
 
 For production, place the app behind an identity-aware proxy, configure TLS, use a managed database, store Google credentials in a secrets manager, and connect the API to approved telemetry sources.
 
+## Production Checklist
+
+- Use Postgres via `DATABASE_URL=postgresql+psycopg://...`.
+- Enable `AUTH_ENABLED=true` and place API keys in a secret manager.
+- Put the service behind SSO or an identity-aware proxy.
+- Configure TLS, audit logging, backups, rate limits, and retention jobs.
+- Connect sanctioned telemetry through the connector boundaries.
+- Validate generated YARA/Sigma/STIX content before enforcement or sharing.

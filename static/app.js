@@ -8,8 +8,13 @@ const pivots = document.querySelector("#pivots");
 const yara = document.querySelector("#yara");
 const cases = document.querySelector("#cases");
 const connectors = document.querySelector("#connectors");
+const dashboard = document.querySelector("#dashboard");
+const graphSummary = document.querySelector("#graph-summary");
+const monitors = document.querySelector("#monitors");
 const caseTitle = document.querySelector("#case-title");
 const createCaseButton = document.querySelector("#create-case");
+const monitorQuery = document.querySelector("#monitor-query");
+const createMonitorButton = document.querySelector("#create-monitor");
 
 function item(title, body, meta = "") {
   const node = document.createElement("div");
@@ -45,6 +50,15 @@ function renderReport(report) {
       return node;
     })
   );
+  refreshDashboard();
+  refreshGraph();
+}
+
+function metric(label, value) {
+  const node = document.createElement("div");
+  node.className = "metric";
+  node.innerHTML = `<strong>${value}</strong><span>${label}</span>`;
+  return node;
 }
 
 form.addEventListener("submit", async (event) => {
@@ -93,6 +107,40 @@ async function refreshConnectors() {
   );
 }
 
+async function refreshDashboard() {
+  const response = await fetch("/api/dashboard");
+  if (!response.ok) return;
+  const payload = await response.json();
+  dashboard.replaceChildren(
+    metric("Investigations", payload.investigations),
+    metric("Cases", payload.cases),
+    metric("Evidence", payload.evidence),
+    metric("Monitors", payload.monitors),
+    metric("Avg Risk", payload.average_risk_score)
+  );
+}
+
+async function refreshGraph() {
+  const response = await fetch("/api/graph");
+  if (!response.ok) return;
+  const payload = await response.json();
+  graphSummary.replaceChildren(
+    item("Graph Size", `${payload.nodes.length} nodes and ${payload.edges.length} edges`, "entity intelligence"),
+    ...payload.nodes.slice(0, 5).map((node) => item(node.label, node.kind, node.id))
+  );
+}
+
+async function refreshMonitors() {
+  const response = await fetch("/api/monitors");
+  if (!response.ok) return;
+  const payload = await response.json();
+  monitors.replaceChildren(
+    ...payload.map((monitor) =>
+      item(monitor.name, `${monitor.query}`, `${monitor.cadence} | threshold ${monitor.threshold}`)
+    )
+  );
+}
+
 createCaseButton.addEventListener("click", async () => {
   await fetch("/api/cases", {
     method: "POST",
@@ -100,7 +148,21 @@ createCaseButton.addEventListener("click", async () => {
     body: JSON.stringify({ title: caseTitle.value, severity: "medium", tags: ["darkweb"] }),
   });
   await refreshCases();
+  await refreshDashboard();
+});
+
+createMonitorButton.addEventListener("click", async () => {
+  await fetch("/api/monitors", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name: "Watchlist monitor", query: monitorQuery.value, threshold: 70 }),
+  });
+  await refreshMonitors();
+  await refreshDashboard();
 });
 
 refreshCases();
 refreshConnectors();
+refreshDashboard();
+refreshGraph();
+refreshMonitors();

@@ -5,6 +5,7 @@
 - Product: Darkweb Monitoring - Agentic AI
 - Version: 1.1
 - Status: Implemented baseline with enterprise extensions
+- Latest build: Enterprise platform scaffold covering users/RBAC records, audit, jobs, monitors, notifications, uploads, detection packs, dashboard metrics, and migration scaffolding
 - Primary audience: SOC, threat intelligence, detection engineering, security leadership, platform engineering
 - Repository: `mayanklau/Darkweb-monitoring.---Agentic-AI`
 
@@ -43,6 +44,7 @@ Traditional dark-web monitoring often produces large volumes of keyword hits wit
 - Preserve reports, rationale, confidence, and evidence for audit.
 - Provide a complete deployable baseline with API, UI, persistence, tests, CI, Docker, and documentation.
 - Support enterprise pilot readiness through cases, evidence, Postgres, auth hooks, graph APIs, and export boundaries.
+- Support operational readiness through audit events, users, jobs, monitors, notifications, dashboards, uploads, and detection-pack generation.
 
 ## Non-Goals
 
@@ -70,6 +72,10 @@ Traditional dark-web monitoring often produces large volumes of keyword hits wit
 - As a SOC lead, I can group investigations into cases and track status.
 - As a platform engineer, I can run locally on SQLite and deploy with Postgres.
 - As an integration owner, I can see which connector boundaries exist and export report data.
+- As a manager, I can see dashboard metrics for investigations, cases, evidence, monitors, and risk.
+- As an admin, I can create users and inspect audit events.
+- As a detection engineer, I can generate YARA, Sigma, KQL, SPL, Suricata, and Snort starter content.
+- As an analyst, I can upload files as evidence and preserve hashes.
 
 ## Functional Requirements
 
@@ -141,6 +147,38 @@ Traditional dark-web monitoring often produces large volumes of keyword hits wit
    - Separate analyst and admin keys.
    - Protect admin retention endpoint with admin role.
 
+14. Users and RBAC Records
+   - Create users with email, name, team, role, and active state.
+   - Support roles: admin, manager, analyst, viewer.
+   - Expose user listing to admins.
+
+15. Audit Trail
+   - Create audit events for case, evidence, investigation, rule, job, monitor, notification, and user actions.
+   - Expose recent audit events through an admin endpoint.
+
+16. Automation
+   - Create background job records for enrichment, export, retrohunt, and connector workflows.
+   - Mark jobs complete with structured results.
+   - Create saved monitors with query, cadence, threshold, and enabled state.
+   - Evaluate monitors through the investigation engine.
+   - Create notification records for local, webhook, email, Slack, or Teams-style delivery paths.
+
+17. File Uploads
+   - Accept multi-file evidence uploads.
+   - Store SHA-256 and byte-size metadata.
+   - Reject files larger than the configured upload limit.
+
+18. Detection Pack Generation
+   - Generate YARA from the investigation report.
+   - Generate Sigma, KQL, SPL, Suricata, and Snort starter rules.
+   - Persist generated rules with versions.
+
+19. Dashboard
+   - Return metrics for investigations, cases, evidence, monitors, open cases by severity, and average risk.
+
+20. Migration Support
+   - Include Alembic scaffold for production teams that want managed schema rollout.
+
 ## Security and Compliance Requirements
 
 - Treat the product as defensive-only tooling.
@@ -184,6 +222,7 @@ Investigations:
 - `GET /api/investigations`
 - `GET /api/investigations/{report_id}`
 - `GET /api/investigations/{report_id}/exports/stix`
+- `POST /api/investigations/{report_id}/rules/generate`
 
 Cases:
 
@@ -196,8 +235,14 @@ Cases:
 Evidence:
 
 - `POST /api/evidence`
+- `POST /api/uploads/evidence`
 - `POST /api/cases/{case_id}/evidence`
 - `GET /api/cases/{case_id}/evidence`
+
+Comments:
+
+- `POST /api/cases/{case_id}/comments`
+- `GET /api/cases/{case_id}/comments`
 
 OCR:
 
@@ -208,9 +253,40 @@ Graph and connectors:
 - `GET /api/graph`
 - `GET /api/connectors`
 
+Dashboard:
+
+- `GET /api/dashboard`
+
+Rules:
+
+- `GET /api/rules`
+
+Jobs:
+
+- `POST /api/jobs`
+- `POST /api/jobs/{job_id}/complete`
+- `GET /api/jobs`
+
+Monitors:
+
+- `POST /api/monitors`
+- `GET /api/monitors`
+- `POST /api/monitors/{monitor_id}/evaluate`
+
+Notifications:
+
+- `POST /api/notifications`
+- `GET /api/notifications`
+
+Users:
+
+- `POST /api/users`
+- `GET /api/users`
+
 Admin:
 
 - `GET /api/admin/retention`
+- `GET /api/audit`
 
 ## Success Metrics
 
@@ -222,6 +298,10 @@ Admin:
 - Case creation and evidence attachment work through API and UI.
 - Graph endpoint returns nodes and edges after investigations exist.
 - STIX-like export returns an importable bundle-shaped document.
+- Rule generation persists YARA, Sigma, KQL, SPL, Suricata, and Snort records.
+- Uploads preserve SHA-256 and byte-size metadata.
+- Monitor evaluation stores a structured result.
+- Dashboard metrics reflect current stored data.
 
 ## Acceptance Criteria
 
@@ -236,6 +316,7 @@ Admin:
 - Graph endpoint returns investigation and indicator nodes.
 - Connector endpoint lists GTI, MISP, OpenCTI, and SIEM readiness.
 - Auth can be disabled locally and enabled via environment variables.
+- Users and audit endpoints are admin-gated when auth is enabled.
 
 ## Release Scope
 
@@ -247,13 +328,18 @@ Included in this implementation:
 - Google Vision OCR integration stub with real client support.
 - Agentic analysis engine.
 - YARA generation.
+- Sigma, KQL, SPL, Suricata, and Snort generation.
 - Case management with status, owner, severity, tags, evidence, and investigation attachment.
+- Case comments and audit events.
+- Users/RBAC records.
+- Jobs, monitors, notifications, dashboard metrics, and file upload hashing.
 - Entity graph generation for investigations and indicators.
 - STIX-like export for MISP/OpenCTI style sharing.
 - Connector registry boundaries for GTI, MISP, OpenCTI, and SIEM integrations.
 - API-key auth with analyst/admin roles.
 - Docker and Compose.
 - CI workflow.
+- Alembic migration scaffold.
 - Unit/API tests.
 
 Future enhancements:
@@ -266,9 +352,8 @@ Future enhancements:
 - External YARA validation pipeline.
 - MiroFish sidecar adapter for large-scale simulation when license and deployment boundaries permit.
 - Enterprise SSO integration.
-- Full audit event table.
+- Enterprise SSO/OIDC integration.
 - PDF OCR with multi-page processing.
-- Sigma and Suricata rule generation.
 - Visual graph UI.
 - Analyst approval workflow for external exports.
 

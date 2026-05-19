@@ -66,6 +66,11 @@
             Paste dark-web intelligence, leaked chat snippets, OCR output, or GTI-style findings to generate a scoped investigation report.
           </article>
 
+          <section>
+            <h3>Dashboard</h3>
+            <div id="dashboard" class="metrics"></div>
+          </section>
+
           <div class="grid">
             <section>
               <h3>Indicators</h3>
@@ -94,6 +99,21 @@
             <section>
               <h3>Connectors</h3>
               <div id="connectors" class="list"></div>
+            </section>
+          </div>
+
+          <div class="grid">
+            <section>
+              <h3>Monitors</h3>
+              <div class="case-actions">
+                <input id="monitor-query" placeholder="Monitor query" value="PHP WSO shell base64 Telegram" />
+                <button id="create-monitor" type="button">Create Monitor</button>
+              </div>
+              <div id="monitors" class="list"></div>
+            </section>
+            <section>
+              <h3>Graph</h3>
+              <div id="graph-summary" class="list"></div>
             </section>
           </div>
 

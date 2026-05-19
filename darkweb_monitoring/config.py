@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     google_cloud_project: str | None = None
     vision_ocr_enabled: bool = False
     retention_days: int = Field(default=180, ge=1)
+    max_upload_bytes: int = Field(default=10_485_760, ge=1)
+    notification_webhook_url: str | None = None
+    enable_scheduled_monitors: bool = False
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

@@ -21,6 +21,15 @@ This repository contains a working production baseline:
 - STIX-like export
 - Connector registry for GTI, MISP, OpenCTI, and SIEM integrations
 - API-key auth hooks
+- Users/RBAC records
+- Audit events
+- Background job records
+- Saved monitors
+- Notification records
+- Dashboard metrics
+- Multi-file uploads with SHA-256 hashing
+- Sigma, KQL, SPL, Suricata, and Snort rule generation
+- Alembic migration scaffold
 - Docker and Docker Compose
 - GitHub Actions CI
 - Unit and API tests
@@ -81,6 +90,18 @@ The repo includes connector-ready boundaries for:
 
 Live third-party pushes are intentionally not hard-coded. Production teams can add sanctioned credentials and API clients inside these boundaries.
 
+### Enterprise Operations
+
+- Create users with role/team metadata for RBAC-ready deployments.
+- Record audit events for key create/update/generate/upload actions.
+- Create background job records for enrichment, exports, retrohunt, and connector work.
+- Create saved monitors with query, threshold, cadence, and enabled state.
+- Evaluate monitors through the same investigation engine.
+- Create notification records for local, webhook, email, Slack, or Teams-style delivery paths.
+- Upload multiple evidence files and preserve SHA-256 plus byte-size metadata.
+- Generate persisted detection packs across YARA, Sigma, KQL, SPL, Suricata, and Snort.
+- Review dashboard metrics for investigations, cases, evidence, monitors, open severity, and average risk.
+
 ## Safety Boundaries
 
 This product is defensive tooling only.
@@ -135,11 +156,14 @@ flowchart LR
 │   ├── graph.py             # Entity graph builder
 │   ├── main.py              # FastAPI application and routes
 │   ├── models.py            # Pydantic models
+│   ├── monitors.py          # Saved monitor evaluation
+│   ├── rulegen.py           # Sigma/KQL/SPL/Suricata/Snort generation
 │   ├── security.py          # API-key auth and role checks
 │   ├── storage.py           # SQLAlchemy storage layer
 │   └── yara.py              # YARA generation
 ├── docs/
 │   └── PRD.md               # Comprehensive product requirements document
+├── migrations/              # Alembic migration scaffold
 ├── static/
 │   ├── app.js               # Browser UI behavior
 │   ├── index.html           # Analyst console
@@ -272,6 +296,12 @@ curl -X POST http://localhost:8000/api/cases/{case_id}/investigations/{report_id
 curl http://localhost:8000/api/graph
 ```
 
+### Dashboard
+
+```bash
+curl http://localhost:8000/api/dashboard
+```
+
 ### Connector Registry
 
 ```bash
@@ -282,6 +312,45 @@ curl http://localhost:8000/api/connectors
 
 ```bash
 curl http://localhost:8000/api/investigations/{report_id}/exports/stix
+```
+
+### Generate Detection Pack
+
+```bash
+curl -X POST http://localhost:8000/api/investigations/{report_id}/rules/generate
+curl http://localhost:8000/api/rules?report_id={report_id}
+```
+
+### Jobs, Monitors, Notifications
+
+```bash
+curl -X POST http://localhost:8000/api/jobs \
+  -H "Content-Type: application/json" \
+  -d '{"kind":"retrohunt","payload":{"report_id":"example"}}'
+
+curl -X POST http://localhost:8000/api/monitors \
+  -H "Content-Type: application/json" \
+  -d '{"name":"WSO shell watch","query":"WSO PHP shell Telegram base64","threshold":70}'
+
+curl -X POST http://localhost:8000/api/notifications \
+  -H "Content-Type: application/json" \
+  -d '{"channel":"local","target":"soc","title":"High risk finding","body":"Review new shell-sale activity"}'
+```
+
+### Users and Audit
+
+```bash
+curl -X POST http://localhost:8000/api/users \
+  -H "Content-Type: application/json" \
+  -d '{"email":"analyst@example.com","name":"Analyst","role":"analyst","team":"soc"}'
+
+curl http://localhost:8000/api/audit
+```
+
+### Multi-file Evidence Upload
+
+```bash
+curl -F "files=@evidence.txt" -F "files=@screenshot.txt" http://localhost:8000/api/uploads/evidence
 ```
 
 ### Google Vision OCR
@@ -355,6 +424,7 @@ The test suite covers:
 - Investigation API
 - Case/evidence/graph/export flow
 - Connector registry
+- Enterprise operations: monitors, jobs, notifications, users, audit, rule generation, uploads
 
 Run:
 
@@ -383,7 +453,6 @@ Near-term:
 
 - Multi-file OCR ingestion
 - PDF OCR pipeline
-- Sigma rule generation
 - Case comments and analyst activity feed
 - CSV/STIX export downloads
 - Better UI graph visualization
@@ -394,7 +463,7 @@ Mid-term:
 - OpenCTI push integration
 - SIEM alert forwarding
 - Google Threat Intelligence enrichment adapter
-- Detection validation pipeline
+- Detection validation pipeline for generated YARA/Sigma/KQL/SPL/Suricata/Snort
 - Role-based UI controls
 
 Long-term:
@@ -416,4 +485,3 @@ Google Cloud Vision is supported through the official `google-cloud-vision` Pyth
 The full product requirements document is committed at:
 
 [docs/PRD.md](docs/PRD.md)
-
